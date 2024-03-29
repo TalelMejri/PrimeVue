@@ -1,36 +1,11 @@
 <template>
   <div class="home">
-    <div class="header">
-      <div class="card">
-        <Toolbar class="content">
-          <template #start>
-            <img src="../assets/neoledge.png" alt="">
-          </template>
-          <template #center>
-            <p class="titre">Neoledge Processus</p>
-          </template>
-          <template #end class="d-flex gap-4">
-            <Button icon="pi pi-bell" class="mx-2" severity="secondary" />
-            <Button icon="pi pi-user" class="mx-2 " severity="secondary" />
-          </template>
-        </Toolbar>
-      </div>
-    </div>
-    <div class="config">
-      <div class="card">
-        <Toolbar class="config_content">
-          <template #start>
-            <Button label="Execution" icon="pi pi-play" iconPos="right" raised @click="ToggleSimulation()" />
-          </template>
-          <template #center>
-          </template>
-          <template #end>
-            <SpeedDial :model="items" :transitionDelay="80" direction="left" style="right: 1em;"
-              buttonClass="p-button-warning" />
-            <input type="file" accept=".bpmn" @change="handleFileImport" ref="fileInput" style="display: none" />
-          </template>
-        </Toolbar>
-      </div>
+    <div>
+      <HeaderComponent></HeaderComponent>
+      <HeaderComponentConfig @importDiagram="importDiagram" @resetDiagram="resetDiagram"
+        @downloadDiagramXml="downloadDiagramXml" @SaveDiagram="SaveDiagram" @downloadDiagramSvg="downloadDiagramSvg"
+        @ToggleSimulation="ToggleSimulation"></HeaderComponentConfig>
+      <input type="file" accept=".bpmn" @change="handleFileImport" ref="fileInput" style="display: none" />
     </div>
     <div class="flow-container">
       <div ref="content" class="containers">
@@ -48,16 +23,17 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   openLocalDiagram,
+  saveDiagram,
+  saveDiagramToLocal,
   SaveSvg,
   ResetDiagramLocal,
-  saveDiagramToLocal,
-  saveDiagram,
-  RefreshDiagram,
-  parseBPMNJson
+  parseBPMNJson,
 } from "../Utils/diagram_util.js"
+import HeaderComponent from "../components/Headers/HeaderGenralComponent.vue"
+import HeaderComponentConfig from "../components/Headers/HeaderConfigBpmn.vue"
 import TokenSimulationModule from 'bpmn-js-token-simulation/lib/modeler.js';
 import { toggleMode } from "../SimulationNeo/util.js"
 import WorkfloService from "../service/WorkfloService.js"
@@ -84,6 +60,7 @@ let bpmnElementfactory;
 onMounted(() => {
   initializeModeler();
 });
+
 
 const initializeModeler = () => {
   modeler = new Modeler({
@@ -141,13 +118,15 @@ const handleElementChange = (event) => {
 
 const importDiagram = () => {
   fileInput.value.click();
-};
+}
 
 const handleFileImport = (event) => {
   const file = event.target.files[0];
   const reader = new FileReader();
   reader.onload = (e) => {
-    modeler.destroy();
+    if (modeler) {
+      modeler.destroy();
+    }
     modeler = new Modeler({
       container: canvas.value,
       keyboard: { bindTo: window },
@@ -178,13 +157,12 @@ const resetDiagram = () => {
 const downloadDiagramXml = () => {
   saveDiagram(toRaw(modeler))
 };
-const SaveDiagram = () => {
+function SaveDiagram() {
   saveDiagramToLocal(modeler);
 }
 const downloadDiagramSvg = async () => {
   SaveSvg(modeler);
 };
-
 const ToggleSimulation = () => {
   if (errors.length > 0) {
     console.log(errors);
@@ -220,44 +198,6 @@ const ToggleSimulation = () => {
   }
 }
 
-const items = ref([
-  {
-    label: 'Download',
-    icon: 'pi pi-download',
-    command: () => {
-      downloadDiagramXml();
-    }
-  },
-  {
-    label: 'Save',
-    icon: 'pi pi-image',
-    command: () => {
-      downloadDiagramSvg();
-    }
-  },
-  {
-    label: 'Refresh',
-    icon: 'pi pi-refresh',
-    command: () => {
-      resetDiagram();
-    }
-  },
-
-  {
-    label: 'Upload',
-    icon: 'pi pi-upload',
-    command: () => {
-      importDiagram();
-    }
-  },
-  {
-    label: 'Save',
-    icon: 'pi pi-save',
-    command: () => {
-      SaveDiagram();
-    }
-  }
-])
 
 </script>
 <style>
@@ -266,12 +206,15 @@ const items = ref([
 @import '~bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 @import 'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css';
 @import url("~bpmn-js-token-simulation/assets/css/bpmn-js-token-simulation.css");
-.bts-toggle-mode{
+
+.bts-toggle-mode {
   display: none !important;
 }
-.bts-toggle{
+
+.bts-toggle {
   display: none !important;
 }
+
 .djs-popup.color-picker .djs-popup-body .entry {
   margin: 2px;
 }
@@ -279,24 +222,6 @@ const items = ref([
 .djs-popup.color-picker .djs-popup-body {
   display: grid;
   grid: auto-flow / 1fr 1fr 1fr;
-}
-
-.titre {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.content {
-  background: linear-gradient(120deg, white 50%, yellow 50%) !important;
-  padding: .5em;
-}
-
-.config_content {
-  padding: .5em;
-}
-
-.config_content Button {
-  padding: .5em;
 }
 
 .containers {
