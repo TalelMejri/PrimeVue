@@ -20,7 +20,7 @@
       <div class="card">
         <Toolbar class="config_content">
           <template #start>
-            <Button label="Execution" icon="pi pi-play" iconPos="right" raised disabled />
+            <Button label="Execution" icon="pi pi-play" iconPos="right" raised @click="ToggleSimulation()" />
           </template>
           <template #center>
           </template>
@@ -55,8 +55,12 @@ import {
   ResetDiagramLocal,
   saveDiagramToLocal,
   saveDiagram,
-  RefreshDiagram
+  RefreshDiagram,
+  parseBPMNJson
 } from "../Utils/diagram_util.js"
+import TokenSimulationModule from 'bpmn-js-token-simulation/lib/modeler.js';
+import { toggleMode } from "../SimulationNeo/util.js"
+import WorkfloService from "../service/WorkfloService.js"
 import { createElement, AddElementComposer, DeleteElement, UpdateElement } from "../GererElement/utils.js";
 import { ref, onMounted, toRaw } from 'vue';
 import ColorsBpm from "../colors/index";
@@ -69,6 +73,7 @@ const error = ref(errors);
 let modeler;
 const canvas = ref(null);
 const element = ref(null);
+const _active = ref(true);
 const visibleRight = ref(false);
 const visibleErrors = ref(false);
 const fileInput = ref(null);
@@ -86,8 +91,9 @@ const initializeModeler = () => {
     keyboard: { bindTo: window },
     additionalModules: [
       gridModule,
+      ColorsBpm,
+      TokenSimulationModule,
       LinterModule,
-      ColorsBpm
     ],
     moddleExtensions: { neo: NeoledgeDescriptor }
   });
@@ -128,10 +134,8 @@ const handleElementChange = (event) => {
   const changedElement = event.element;
   if (changedElement !== undefined) {
     element.value = [changedElement.id, changedElement.labels, changedElement.type, changedElement.businessObject];
-    visibleRight.value = true;
   } else {
     element.value = null;
-    visibleRight.value = false;
   }
 };
 
@@ -150,7 +154,8 @@ const handleFileImport = (event) => {
       additionalModules: [
         gridModule,
         LinterModule,
-        ColorsBpm
+        ColorsBpm,
+        TokenSimulationModule
       ],
       moddleExtensions: { neo: NeoledgeDescriptor }
     });
@@ -180,6 +185,40 @@ const downloadDiagramSvg = async () => {
   SaveSvg(modeler);
 };
 
+const ToggleSimulation = () => {
+  if (errors.length > 0) {
+    console.log(errors);
+    alert("There are errors in the process. Please fix them before starting the simulation.")
+    return;
+  } else {
+
+    modeler.saveXML({ format: true }, function (err, updatedXml) {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      const blob = new Blob([updatedXml], { type: 'application/bpmn20-xml;charset=utf-8' });
+      var definitions = modeler.get("canvas").getRootElement().businessObject.$parent;
+      WorkfloService.UploadFile(blob, parseBPMNJson(definitions)).then((res) => {
+        if (res.data.length == 0) {
+          return;
+        } else {
+          for (let i = 0; i < (res.data).length; i++) {
+            const elementNew = bpmnElementRegistry.get(res.data[i]);
+            modeler.get('modeling').updateProperties(elementNew, { status: 1 });
+          }
+          const eventBus = modeler.get('eventBus');
+          const active = _active.value;
+          _active.value = !active;
+          const canvas = modeler.get('canvas');
+          const selection = modeler.get('selection');
+          const contextPad = modeler.get('contextPad');
+          toggleMode(active, eventBus, canvas, selection, contextPad);
+        }
+      })
+    });
+  }
+}
 
 const items = ref([
   {
@@ -226,7 +265,13 @@ const items = ref([
 @import '~bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css';
 @import '~bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css';
 @import 'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css';
-
+@import url("~bpmn-js-token-simulation/assets/css/bpmn-js-token-simulation.css");
+.bts-toggle-mode{
+  display: none !important;
+}
+.bts-toggle{
+  display: none !important;
+}
 .djs-popup.color-picker .djs-popup-body .entry {
   margin: 2px;
 }
@@ -276,4 +321,4 @@ img {
 .panel {
   padding: 1em;
 }
-</style>../GererElement/utils.js
+</style>

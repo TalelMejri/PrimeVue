@@ -7,6 +7,7 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "axios": "^1.6.8",
     "bpmn-js": "^3.5.0",
     "bpmn-js-color-picker": "^0.7.0",
     "bpmn-js-token-simulation": "^0.34.0",

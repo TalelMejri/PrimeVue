@@ -48,6 +48,7 @@ export default function Linter(eventBus, overlays,popupMenu,contextPad,canvas) {
   }
 
   eventBus.on(ELEMENT_CHANGED_EVENT, function (event) {
+    console.log("ELEMENT_CHANGED_EVENT");
     var element = event.element;
     if (element.labelTarget ||
       !element.businessObject.$instanceOf('bpmn:FlowNode')) {
