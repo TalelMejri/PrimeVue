@@ -7,7 +7,14 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "bpmn-js": "^3.5.0",
     "core-js": "^3.8.3",
+    "diagram-js": "^14.0.0",
+    "diagram-js-grid": "^1.0.0",
+    "jquery": "^3.7.1",
+    "lz-string": "1.4.4",
+    "min-dash": "^4.2.1",
+    "min-dom": "^4.1.0",
     "primeicons": "^6.0.1",
     "primevue": "^3.49.1",
     "vue": "^3.2.13",
@@ -21,8 +28,11 @@
     "@vue/cli-plugin-typescript": "~5.0.0",
     "@vue/cli-plugin-vuex": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "file-loader": "^6.2.0",
+    "json-loader": "^0.5.7",
     "sass": "^1.32.7",
     "sass-loader": "^12.0.0",
-    "typescript": "~4.5.5"
+    "typescript": "~4.5.5",
+    "xml-loader": "^1.2.1"
   }
 }
