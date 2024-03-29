@@ -36,7 +36,12 @@
       <div ref="content" class="containers">
         <div id="canvas" ref="canvas" class="canvas"></div>
       </div>
-      <Sidebar class="panel" v-model:visible="visibleRight" header="Right Panel" position="right">
+      <div class="card_error" style="padding: 15px; text-align: center;">
+        Problems({{ errors.length }})
+        <Button icon="pi pi-exclamation-triangle" class="mx-2" severity="secondary"
+          @click="visibleErrors = !visibleErrors" />
+      </div>
+      <Sidebar class="panel" v-model:visible="visibleRight" header="Neoledge Panel" position="right">
         {{ element }}
       </Sidebar>
     </div>
@@ -49,16 +54,23 @@ import {
   SaveSvg,
   ResetDiagramLocal,
   saveDiagramToLocal,
+  saveDiagram,
   RefreshDiagram
 } from "../Utils/diagram_util.js"
+import { createElement, AddElementComposer, DeleteElement, UpdateElement } from "../properties_custom/utils.js";
 import { ref, onMounted, toRaw } from 'vue';
+import ColorsBpm from "../colors/index";
 import Modeler from "bpmn-js/lib/Modeler.js";
 import gridModule from 'diagram-js-grid';
 import NeoledgeDescriptor from '../descriptor/NeoledgeDescriptor.json';
+import LinterModule from "../LinterElement/index.js";
+import { errors } from "../LinterElement/util.js";
+const error = ref(errors);
 let modeler;
 const canvas = ref(null);
 const element = ref(null);
 const visibleRight = ref(false);
+const visibleErrors = ref(false);
 const fileInput = ref(null);
 let zoomLevel = ref(1);
 let bpmnElementRegistry;
@@ -74,6 +86,8 @@ const initializeModeler = () => {
     keyboard: { bindTo: window },
     additionalModules: [
       gridModule,
+      LinterModule,
+      ColorsBpm
     ],
     moddleExtensions: { neo: NeoledgeDescriptor }
   });
@@ -135,6 +149,8 @@ const handleFileImport = (event) => {
       keyboard: { bindTo: window },
       additionalModules: [
         gridModule,
+        LinterModule,
+        ColorsBpm
       ],
       moddleExtensions: { neo: NeoledgeDescriptor }
     });
@@ -241,7 +257,7 @@ const items = ref([
 .containers {
   background-color: #ffffff;
   width: 100%;
-  height: 80vh;
+  height: 75vh;
 }
 
 .canvas {
@@ -257,10 +273,7 @@ img {
   width: 50px;
 }
 
-.panel{
-  width: 20%;
-  height: 100%;
+.panel {
   padding: 1em;
-  overflow: auto;
 }
 </style>

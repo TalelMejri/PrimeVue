@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "bpmn-js": "^3.5.0",
+    "bpmn-js-color-picker": "^0.7.0",
+    "bpmn-js-token-simulation": "^0.34.0",
     "core-js": "^3.8.3",
     "diagram-js": "^14.0.0",
     "diagram-js-grid": "^1.0.0",
