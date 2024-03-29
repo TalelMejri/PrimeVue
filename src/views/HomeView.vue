@@ -57,7 +57,7 @@ import {
   saveDiagram,
   RefreshDiagram
 } from "../Utils/diagram_util.js"
-import { createElement, AddElementComposer, DeleteElement, UpdateElement } from "../properties_custom/utils.js";
+import { createElement, AddElementComposer, DeleteElement, UpdateElement } from "../GererElement/utils.js";
 import { ref, onMounted, toRaw } from 'vue';
 import ColorsBpm from "../colors/index";
 import Modeler from "bpmn-js/lib/Modeler.js";
@@ -276,4 +276,4 @@ img {
 .panel {
   padding: 1em;
 }
-</style>
+</style>../GererElement/utils.js
